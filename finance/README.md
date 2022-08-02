@@ -43,3 +43,5 @@ This repository contains python and julia scripts for getting, cleaning and anal
     - insider trading volumes
     - stock prices 1 wk before and after fundamental financial documents were made publicly available
 2. Build a UI/web app to more easily dive into the data    
+3. Minute by minute pricing data
+4. Setup data lake on s3

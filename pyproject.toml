@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "finance"
+version = "1.0.0"
+description = "R&D"
+authors = ["Lucas Selig <lucasaselig@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "~3.8.5"
+flake8 = "^5.0.0"
+black = "^22.6.0"
+certifi = "^2022.6.15"
+seaborn = "^0.11.2"
+alive-progress = "^2.4.1"
+python-dotenv = "^0.20.0"
+fastparquet = "^0.8.1"
+
+[tool.black]
+line-length = 120
+
+# Private Packages
+alive-progress = "^2.4.1"
+pyspark = "^3.3.0"
+
+[tool.poetry.dev-dependencies]
+ipykernel = "^6.15.1"
