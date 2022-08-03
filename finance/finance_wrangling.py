@@ -86,6 +86,7 @@ def dfs_to_master_df(do_plots, do_summary):
             plt.savefig(f"{PLOTS_DIR}/{feat}_dist.png", dpi = 500)
             plt.close()
     df_tmp.to_parquet(f"{DATA_DIR}/fundamental_analysis_neglog.parquet", index = False)
+        
     if(do_summary):
         print(df_tmp.head())
         print(df_tmp.describe())
