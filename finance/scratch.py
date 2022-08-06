@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 sns.set_style("darkgrid")
-import numpy as np 
+import numpy as np
 import matplotlib.pyplot as plt
 def sigmoid(x, alpha, beta):
     """Standard sigmoid function, translated by beta and scaled by alpha.
@@ -74,10 +74,8 @@ def asymmetric_booster(x, alpha, beta, gamma):
     tol = 1e-10
 
     if gamma < 25.0 + tol:
-        log.debug(f"gamma={gamma} close to 25. Replacing with 25 + {tol}")
         gamma = 25.0 + tol
     elif 75.0 - gamma < tol:
-        log.debug(f"gamma={gamma} close to 75. Replacing with 75 - {tol}")
         gamma = 75.0 - tol
 
     # Rescale gamma to ensure f(stress=beta) = gamma
@@ -114,20 +112,23 @@ def asymmetric_booster(x, alpha, beta, gamma):
 # scores = asymmetric_booster(ws, alpha, beta, gamma)
 # plt.plot(scores)
 # plt.show()
+df = pd.read_parquet("/Users/lselig/Desktop/ppg_on_off_dataset/60E880C3-2180-4FC5-A8AC-3AC95294CBB1_02282022.parquet")
+plt.plot(df.acc_abs_diff)
+plt.show()
+eda_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_lucas_staging/P9/eb1532000059/eb1532000059_eda.parquet")
+# eda_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/prs_window_eda_1659390693.parquet")
+# features_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/features_1659390693.parquet")
 
-eda_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/prs_window_eda_1659390693.parquet")
-features_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/features_1659390693.parquet")
-
-fig, axs = plt.subplots(3, 1, figsize = (15, 9), sharex = True)
-axs[0].plot(eda_df.dt_tmp, eda_df.conductance)
+fig, axs = plt.subplots(2, 1, figsize = (15, 9), sharex = True)
+axs[0].plot(pd.to_datetime(eda_df.etime, unit = "s"), eda_df.conductance)
 axs[0].set_ylabel("EDA (µS)")
-axs[1].plot(eda_df.dt_tmp, eda_df.drive_voltage / 1e12)
+axs[1].plot(pd.to_datetime(eda_df.etime, unit = "s"),  eda_df.drive_voltage / 1e12)
 axs[1].set_ylabel("Drive Voltge (V)")
-axs[2].plot(pd.to_datetime(features_df.ts, unit = "s"), features_df.acr)
-axs[2].set_ylabel("ACR capped at 10")
-axs[2].set_ylim(0, 10)
-axs[2].set_title(f"Median ACR: {np.nanmedian(features_df.acr):.2f}")
+# axs[2].plot(pd.to_datetime(features_df.ts, unit = "s"), features_df.acr)
+# axs[2].set_ylabel("ACR capped at 10")
+# axs[2].set_ylim(0, 10)
+# axs[2].set_title(f"Median ACR: {np.nanmedian(features_df.acr):.2f}")
 # axs[3].plot(pd.to_datetime(features_df.ts, unit = "s"), features_df.sqi, drawstyle = "steps-post")
 # axs[3].set_ylabel("SQI")
-fig.suptitle("Harlie personalization window")
+# fig.suptitle("Harlie personalization window")
 plt.show()
