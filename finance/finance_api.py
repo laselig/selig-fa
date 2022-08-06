@@ -7,11 +7,11 @@ import seaborn as sns
 import pandas as pd
 from urllib.request import urlopen
 from alive_progress import alive_bar
-from finance.constants import MAX_WORKERS,DATA_DIR 
+from finance.constants import MAX_WORKERS,DATA_DIR
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime, timedelta
 import gc
-from dateutil.relativedelta import relativedelta, MO,TU 
+from dateutil.relativedelta import relativedelta, MO,TU
 sns.set_style("darkgrid")
 
 def json_to_file(my_dict, out_file):
@@ -57,7 +57,7 @@ def request_and_download_stocks(ticker, save_path):
                 code =  429
                 while code == 429 and n_fails <= 1000:
                     try:
-                        url =f"https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?from={rd}&to={rd}&apikey={API_KEY}" 
+                        url =f"https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?from={rd}&to={rd}&apikey={API_KEY}"
                         response = urlopen(url)
                         code = response.code
                         if(code != 200):
@@ -77,7 +77,7 @@ def request_and_download_stocks(ticker, save_path):
                     tmp.append(daily_prices)
 
             if(len(tmp) != 0):
-                combined =pd.concat(tmp, axis = 1) 
+                combined =pd.concat(tmp, axis = 1)
                 combined["symbol"] = ticker
                 prices.append(combined)
             else:
@@ -133,7 +133,7 @@ def make_single_api_request(url):
 
 def get_stock_data(folder_name, df):
     unique_tickers = df.symbol.unique()
-    base_path_out =f"{DATA_DIR}/{folder_name}" 
+    base_path_out =f"{DATA_DIR}/{folder_name}"
     if not os.path.isdir(base_path_out):
         os.makedirs(base_path_out)
     save_paths = [f"{base_path_out}/{x}.parquet" for x in unique_tickers]
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         period="quarter",
         pull_stock_data=True,
     )
-    
-    
+
+
         #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
         # print("\n\n")
