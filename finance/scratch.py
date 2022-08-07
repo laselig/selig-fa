@@ -3,6 +3,43 @@ import seaborn as sns
 sns.set_style("darkgrid")
 import numpy as np
 import matplotlib.pyplot as plt
+from __future__ import print_function
+from math import sin, cos, radians
+import timeit
+
+'''
+A simple Python benchmark.
+
+Results on an overclocked AMD FX-8150 Eight-Core CPU @ 3.0 GHz, and
+an Intel Core i5-2410M CPU @ 2.30GHz.
+
+$ python -OO bench.py
+1.99843406677 2.00139904022 2.0145778656
+2.38226699829 2.38675498962 2.38853287697
+
+$ python3 -OO bench.py
+2.2073315899979207 2.2098999509980786 2.222747125000751
+2.273064840992447  2.274112678001984 2.2759074380010134
+
+$ pypy -OO bench.py
+0.245079994202 0.24707698822  0.247714996338
+0.241708040237 0.242873907089 0.245008945465
+
+$ pypy3 -OO bench.py
+1.1291401386260986 1.1360960006713867 1.1375579833984375
+1.2108190059661865 1.2172389030456543 1.2178328037261963
+
+'''
+
+
+def bench():
+    product = 1.0
+    for counter in range(1, 1000, 1):
+        for dex in list(range(1, 360, 1)):
+            angle = radians(dex)
+            product *= sin(angle)**2 + cos(angle)**2
+    return product
+
 def sigmoid(x, alpha, beta):
     """Standard sigmoid function, translated by beta and scaled by alpha.
     With positive alpha, approaches 0 as x -> -inf and 1 as x -> inf.
@@ -103,32 +140,7 @@ def asymmetric_booster(x, alpha, beta, gamma):
     score = A * f_largex + B * f_smallx
 
     return score
-# df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/features.parquet")
-# alpha = 14.82
-# beta = 0.402
-# gamma = 38.3
-# ws = df.weighted_sum.values
-# ws = ws[np.where(~np.isnan(ws))]
-# scores = asymmetric_booster(ws, alpha, beta, gamma)
-# plt.plot(scores)
-# plt.show()
-df = pd.read_parquet("/Users/lselig/Desktop/ppg_on_off_dataset/60E880C3-2180-4FC5-A8AC-3AC95294CBB1_02282022.parquet")
-plt.plot(df.acc_abs_diff)
-plt.show()
-eda_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_lucas_staging/P9/eb1532000059/eb1532000059_eda.parquet")
-# eda_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/prs_window_eda_1659390693.parquet")
-# features_df = pd.read_parquet("/Users/lselig/Desktop/tmp_dir/STAGING_PRS_harlie_staging/features_1659390693.parquet")
-
-fig, axs = plt.subplots(2, 1, figsize = (15, 9), sharex = True)
-axs[0].plot(pd.to_datetime(eda_df.etime, unit = "s"), eda_df.conductance)
-axs[0].set_ylabel("EDA (µS)")
-axs[1].plot(pd.to_datetime(eda_df.etime, unit = "s"),  eda_df.drive_voltage / 1e12)
-axs[1].set_ylabel("Drive Voltge (V)")
-# axs[2].plot(pd.to_datetime(features_df.ts, unit = "s"), features_df.acr)
-# axs[2].set_ylabel("ACR capped at 10")
-# axs[2].set_ylim(0, 10)
-# axs[2].set_title(f"Median ACR: {np.nanmedian(features_df.acr):.2f}")
-# axs[3].plot(pd.to_datetime(features_df.ts, unit = "s"), features_df.sqi, drawstyle = "steps-post")
-# axs[3].set_ylabel("SQI")
-# fig.suptitle("Harlie personalization window")
-plt.show()
+if __name__ == '__main__':
+    result = timeit.repeat('bench.bench()', setup='import bench', number=10, repeat=10)
+    result = list(sorted(result))
+    print(*result[:3])
