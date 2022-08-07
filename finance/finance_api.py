@@ -134,6 +134,7 @@ def make_single_api_request(url):
 def get_stock_data(folder_name, df):
     unique_tickers = df.symbol.unique()
     base_path_out =f"{DATA_DIR}/{folder_name}"
+
     if not os.path.isdir(base_path_out):
         os.makedirs(base_path_out)
     save_paths = [f"{base_path_out}/{x}.parquet" for x in unique_tickers]
