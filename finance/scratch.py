@@ -1,5 +1,6 @@
 import pandas as pd
 import seaborn as sns
+
 sns.set_style("darkgrid")
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ from __future__ import print_function
 from math import sin, cos, radians
 import timeit
 
-'''
+"""
 A simple Python benchmark.
 
 Results on an overclocked AMD FX-8150 Eight-Core CPU @ 3.0 GHz, and
@@ -29,7 +30,7 @@ $ pypy3 -OO bench.py
 1.1291401386260986 1.1360960006713867 1.1375579833984375
 1.2108190059661865 1.2172389030456543 1.2178328037261963
 
-'''
+"""
 
 
 def bench():
@@ -37,8 +38,9 @@ def bench():
     for counter in range(1, 1000, 1):
         for dex in list(range(1, 360, 1)):
             angle = radians(dex)
-            product *= sin(angle)**2 + cos(angle)**2
+            product *= sin(angle) ** 2 + cos(angle) ** 2
     return product
+
 
 def sigmoid(x, alpha, beta):
     """Standard sigmoid function, translated by beta and scaled by alpha.
@@ -73,6 +75,7 @@ def sigmoid(x, alpha, beta):
     else:
         # Actual sigmoid function for reasonable values
         return 1.0 / (1.0 + np.exp(-arg))
+
 
 def asymmetric_booster(x, alpha, beta, gamma):
 
@@ -140,7 +143,9 @@ def asymmetric_booster(x, alpha, beta, gamma):
     score = A * f_largex + B * f_smallx
 
     return score
-if __name__ == '__main__':
-    result = timeit.repeat('bench.bench()', setup='import bench', number=10, repeat=10)
+
+
+if __name__ == "__main__":
+    result = timeit.repeat("bench.bench()", setup="import bench", number=10, repeat=10)
     result = list(sorted(result))
     print(*result[:3])

@@ -7,12 +7,14 @@ import seaborn as sns
 import pandas as pd
 from urllib.request import urlopen
 from alive_progress import alive_bar
-from finance.constants import MAX_WORKERS,DATA_DIR 
+from finance.constants import MAX_WORKERS, DATA_DIR
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime, timedelta
 import gc
-from dateutil.relativedelta import relativedelta, MO,TU 
+from dateutil.relativedelta import relativedelta, MO, TU
+
 sns.set_style("darkgrid")
+
 
 def json_to_file(my_dict, out_file):
     """
@@ -24,6 +26,7 @@ def json_to_file(my_dict, out_file):
         json.dump(my_dict, f, ensure_ascii=False, indent=4)
     print(f"wrote json to: {out_file}")
 
+
 def request_and_download_stocks(ticker, save_path):
 
     # this thread works on a single ticker
@@ -32,7 +35,7 @@ def request_and_download_stocks(ticker, save_path):
     del df
     gc.collect()
 
-    while(not Path(save_path).is_file()):
+    while not Path(save_path).is_file():
         prices = []
         # for all financial statements for the ticker
         for i in range(df_for_ticker.shape[0]):
@@ -54,13 +57,13 @@ def request_and_download_stocks(ticker, save_path):
             tmp = []
             for j, rd in enumerate(relevant_dates):
                 n_fails = 0
-                code =  429
+                code = 429
                 while code == 429 and n_fails <= 1000:
                     try:
-                        url =f"https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?from={rd}&to={rd}&apikey={API_KEY}" 
+                        url = f"https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?from={rd}&to={rd}&apikey={API_KEY}"
                         response = urlopen(url)
                         code = response.code
-                        if(code != 200):
+                        if code != 200:
                             print(code, ticker)
                     except:
                         n_fails += 1
@@ -68,29 +71,30 @@ def request_and_download_stocks(ticker, save_path):
 
                 ret = json.loads(response.read().decode("utf-8"))
                 daily_prices = pd.DataFrame().from_dict(ret)
-                if(daily_prices.shape[0] != 0):
+                if daily_prices.shape[0] != 0:
                     daily_prices = pd.json_normalize(daily_prices.historical)
                     old_cols = daily_prices.columns
                     new_cols = [f"{x}_{labels[j]}" for x in old_cols]
                     name_map = dict(zip(old_cols, new_cols))
-                    daily_prices = daily_prices.rename(columns = name_map)
+                    daily_prices = daily_prices.rename(columns=name_map)
                     tmp.append(daily_prices)
 
-            if(len(tmp) != 0):
-                combined =pd.concat(tmp, axis = 1) 
+            if len(tmp) != 0:
+                combined = pd.concat(tmp, axis=1)
                 combined["symbol"] = ticker
                 prices.append(combined)
             else:
                 print("Empty request for a single statement")
 
-        if(len(prices) != 0):
-            prices = pd.concat(prices, ignore_index = True)
-            prices.to_parquet(save_path, index = False)
+        if len(prices) != 0:
+            prices = pd.concat(prices, ignore_index=True)
+            prices.to_parquet(save_path, index=False)
             return
         else:
             print(f"Empty df_for_ticker for all statements for a stock: {ticker}")
-            pd.DataFrame().to_parquet(save_path, index = False)
+            pd.DataFrame().to_parquet(save_path, index=False)
             return
+
 
 def request_and_download_financials(url, save_path):
     """
@@ -121,6 +125,7 @@ def request_and_download_financials(url, save_path):
             return
     return
 
+
 def make_single_api_request(url):
     """
     :param url: endpoint
@@ -131,9 +136,11 @@ def make_single_api_request(url):
     ret = json.loads(response.read().decode("utf-8"))
     return ret
 
+
 def get_stock_data(folder_name, df):
     unique_tickers = df.symbol.unique()
-    base_path_out =f"{DATA_DIR}/{folder_name}" 
+    base_path_out = f"{DATA_DIR}/{folder_name}"
+
     if not os.path.isdir(base_path_out):
         os.makedirs(base_path_out)
     save_paths = [f"{base_path_out}/{x}.parquet" for x in unique_tickers]
@@ -161,6 +168,7 @@ def get_stock_data(folder_name, df):
     toc = timeit.default_timer()
     print(f"Pulling {folder_name} took : {np.round( toc - tic, 2 )}s")
 
+
 def get_financial_statement_data(folder_name, base_api_url, period):
     """
     :param folder_name: base save dir for all of the downloads
@@ -185,7 +193,8 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     tic = timeit.default_timer()
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_download = {
-            executor.submit(request_and_download_financials, url, request_save_map[url]): url for url in request_save_map
+            executor.submit(request_and_download_financials, url, request_save_map[url]): url
+            for url in request_save_map
         }
         with alive_bar(
             len(future_download),
@@ -233,7 +242,6 @@ if __name__ == "__main__":
         period="quarter",
         pull_stock_data=True,
     )
-    
-    
-        #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
-        # print("\n\n")
+
+    #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
+    # print("\n\n")

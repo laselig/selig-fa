@@ -6,14 +6,16 @@ authors = ["Lucas Selig <lucasaselig@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "~3.8.5"
 flake8 = "^5.0.0"
+python = ">=3.9, <4"
 black = "^22.6.0"
 certifi = "^2022.6.15"
 seaborn = "^0.11.2"
 alive-progress = "^2.4.1"
 python-dotenv = "^0.20.0"
 fastparquet = "^0.8.1"
+sklearn = "^0.0"
+ipympl = "^0.9.1"
 
 [tool.black]
 line-length = 120
