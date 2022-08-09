@@ -103,6 +103,31 @@ def dfs_to_master_df(do_plots, do_summary):
         "wk_curr_to_next_pct_inc",
         "wk_prev_to_curr_pct_inc",
     ]
+    df_tmp["current_ratio"] = df_tmp.totalCurrentAssets / df_tmp.totalCurrentLiabilities
+    df_tmp["share_number"] = df_tmp.commonStock + df_tmp.preferredStock
+    market_cap = (df_tmp.share_number) * df_tmp.open_on
+    enterprise_value = market_cap - df_tmp.cashAndCashEquivalents + df_tmp.totalDebt
+
+    ratios = ["pe_ratio", "ps_ratio", "pcf_ratio", "pfcf_ratio",
+            "pb_ratio", "ev_sales", "ev_over_ebitda", "ev_to_cash_flow",
+            "earnings_yield", "free_cash_flow_yield", "debt_to_equity",
+            "debt_to_assets", "current_ratio"]
+
+    price = df_tmp.open_prev
+    df_tmp["pe_ratio"] = price / (df_tmp.netIncome_x / df_tmp.share_number)
+    df_tmp["ps_ratio"] = price / (df_tmp.revenue / df_tmp.share_number)
+    df_tmp["pcf_ratio"] = price / (df_tmp.operatingCashFlow / df_tmp.share_number)
+    df_tmp["pfcf_ratio"] = market_cap / df_tmp.freeCashFlow
+    df_tmp["pb_ratio"] = price  / (df_tmp.totalStockholdersEquity / df_tmp.share_number)
+    df_tmp["ev_sales"] = enterprise_value / df_tmp.revenue
+    df_tmp["ev_over_ebitda"] = enterprise_value / df_tmp.ebitda
+    df_tmp["ev_to_cash_flow"] = enterprise_value / df_tmp.operatingCashFlow
+    df_tmp["earnings_yield"] = (df_tmp.netIncome_x / df_tmp.share_number) / price
+    df_tmp["free_cash_flow_yield"] = df_tmp.freeCashFlow / market_cap
+    df_tmp["debt_to_equity"] = df_tmp.longTermDebt / df_tmp.totalStockholdersEquity
+    df_tmp["debt_to_assets"] = df_tmp.longTermDebt / df_tmp.totalAssets
+    df_tmp["current_ratio"] = df_tmp.totalCurrentAssets / df_tmp.totalCurrentLiabilities
+
     features = list(df_tmp)
     # double transform ratios
     if not Path(f"{PLOTS_DIR}").is_dir():
@@ -125,7 +150,7 @@ def dfs_to_master_df(do_plots, do_summary):
             upper = np.nanmax(df_tmp[feat])
             plt.suptitle(f"neglog transform: {transformed}--{feat}\n" f"lower: {lower:e}\n" f"upper: {upper:e}")
             plt.savefig(f"{PLOTS_DIR}/{feat}_dist.png", dpi=500)
-            if feat in skip_transform:
+            if feat in skip_transform or feat in ratios:
                 plt.show()
             plt.close()
         df_tmp[feat] = transformed_feat
