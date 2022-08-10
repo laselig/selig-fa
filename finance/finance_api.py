@@ -1,4 +1,4 @@
-import certifi, time, json, timeit, os
+import certifi, time, json, timeit, os, math
 import numpy as np
 import concurrent.futures
 from pathlib import Path
@@ -15,10 +15,24 @@ from dateutil.relativedelta import relativedelta, MO, TU
 
 sns.set_style("darkgrid")
 
+def nyse_nasdaq_tickers():
+    df1 = pd.read_csv("C:\\Users\\lselig\\selig-fa\\finance\\.data\\nasdaq_tickers.csv")
+    df2 = pd.read_csv("C:\\Users\\lselig\\selig-fa\\finance\\.data\\nyse.csv")
+    tickers = list(df1.Symbol.values) + list(df2["ACT Symbol"].values)
+    keep = []
+    for t in tickers:
+        print(t)
+        if(not t != t and ("^" in t or '$' in t)):
+            pass
+        else:
+            if(t not in keep):
+                keep.append(t)
+
+    return keep
 
 def json_to_file(my_dict, out_file):
     """
-    :param my_dict: python `dict` object
+    :param my_dict: python `d saict` object
     :param out_file: where to save the dict object
     :return:
     """
@@ -117,6 +131,7 @@ def request_and_download_financials(url, save_path):
             continue
         tmp_dict = json.loads(response.read().decode("utf-8"))
         tmp_df = pd.DataFrame().from_dict(tmp_dict)
+        # print(tmp_df)
         if "date" in list(tmp_df):
             tmp_df["date"] = [parser.parse(x) for x in tmp_df.date]
             tmp_df = tmp_df.sort_values(by=["date"])
@@ -168,8 +183,23 @@ def get_stock_data(folder_name, df):
     toc = timeit.default_timer()
     print(f"Pulling {folder_name} took : {np.round( toc - tic, 2 )}s")
 
+# def get_ratios(folder_name, base_api_url, period):
+#     # https://financialmodelingprep.com/api/v3/ratios/AAPL?period=quarter&limit=140&apikey=c155896f8e1976f528d02f6d7c1d6a67
+
+#     tickers = make_single_api_request(
+#         f"https://financialmodelingprep.com/api/v3/financial-statement-symbol-lists?apikey={API_KEY}"
+#     )
+#     relevant_tickers = [x for x in tickers if x.count(".") == 0]
+#     request_save_map = {}
+#     base_path_out = f"{DATA_DIR}/{folder_name}"
+#     if not os.path.isdir(base_path_out):
+#         os.makedirs(base_path_out)
+#     for t in relevant_tickers:
+#         f_name = f"{t}.parquet"
+
 
 def get_financial_statement_data(folder_name, base_api_url, period):
+
     """
     :param folder_name: base save dir for all of the downloads
     :param base_api_url: base api end point
@@ -179,9 +209,10 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     tickers = make_single_api_request(
         f"https://financialmodelingprep.com/api/v3/financial-statement-symbol-lists?apikey={API_KEY}"
     )
-    relevant_tickers = [x for x in tickers if x.count(".") == 0]
+    # relevant_tickers = [x for x in tickers if x.count(".") == 0]
+    relevant_tickers = nyse_nasdaq_tickers()
     request_save_map = {}
-    base_path_out = f"{DATA_DIR}/{folder_name}"
+    base_path_out = f"{DATA_DIR}\\{folder_name}"
     if not os.path.isdir(base_path_out):
         os.makedirs(base_path_out)
     for t in relevant_tickers:
@@ -212,7 +243,7 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     print(f"Pulling {folder_name} took : {np.round( toc - tic, 2 )}s")
 
 
-def run(pull_income_statements, pull_balance_sheets, pull_cash_flow, period, pull_stock_data):
+def run(pull_income_statements, pull_balance_sheets, pull_cash_flow, period, pull_stock_data, pull_ratios):
     if pull_income_statements:
         folder_name = "income_statements"
         base_api_url = "https://financialmodelingprep.com/api/v3/income-statement"
@@ -230,6 +261,11 @@ def run(pull_income_statements, pull_balance_sheets, pull_cash_flow, period, pul
         all_financials_df = pd.read_parquet("/users/lselig/finance/finance/.data/fundamental_analysis_neglog.parquet")
         get_stock_data(folder_name, all_financials_df)
 
+    if pull_ratios:
+        folder_name = "ratios"
+        base_api_url = "https://financialmodelingprep.com/api/v3/ratios"
+        get_financial_statement_data(folder_name, base_api_url, period = period)
+
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -240,7 +276,8 @@ if __name__ == "__main__":
         pull_cash_flow=False,
         pull_balance_sheets=False,
         period="quarter",
-        pull_stock_data=True,
+        pull_stock_data=False,
+        pull_ratios = True
     )
 
     #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
