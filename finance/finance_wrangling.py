@@ -166,9 +166,10 @@ def dfs_to_master_df(do_plots, do_summary):
 def run():
     # loop_over = ["income_statements", "balance_sheets", "cash_flows"]
     # loop_over = ["hist_prices"]
-    # folders_to_dfs(loop_over)
-    print("Converting dfs to one big df")
-    dfs_to_master_df(do_plots=True, do_summary=True)
+    loop_over = ["ratios"]
+    folders_to_dfs(loop_over)
+    # print("Converting dfs to one big df")
+    # dfs_to_master_df(do_plots=True, do_summary=True)
 
 
 if __name__ == "__main__":
