@@ -145,8 +145,8 @@ def asymmetric_booster(x, alpha, beta, gamma):
 
 
 if __name__ == "__main__":
-    # result = timeit.repeat("bench.bench()", setup="import bench", number=10, repeat=10)
-    # result = list(sorted(result))
-    df = pd.read_parquet("C:\\Users\\lselig\\selig-fa\\finance\\.data\\evs\\AAPL.parquet")
-    print(df.head())
-    # print(*result[:3])
+    result = timeit.repeat("bench.bench()", setup="import bench", number=10, repeat=10)
+    result = list(sorted(result))
+    # df = pd.read_parquet("C:\\Users\\lselig\\selig-fa\\finance\\.data\\evs\\AAPL.parquet")
+    # print(df.head()
+    print(*result[:3])

@@ -7,21 +7,24 @@ import seaborn as sns
 import pandas as pd
 from urllib.request import urlopen
 from alive_progress import alive_bar
-from finance.constants import MAX_WORKERS, DATA_DIR
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime, timedelta
 import gc
 from dateutil.relativedelta import relativedelta, MO, TU
+ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # this is the project root
+MAX_WORKERS = os.cpu_count()
+DATA_DIR = f"{ROOT_DIR}/.data"
+PLOTS_DIR = f"{ROOT_DIR}/.plots"
 
 sns.set_style("darkgrid")
 
 def nyse_nasdaq_tickers():
-    df1 = pd.read_csv("C:\\Users\\lselig\\selig-fa\\finance\\.data\\nasdaq_tickers.csv")
-    df2 = pd.read_csv("C:\\Users\\lselig\\selig-fa\\finance\\.data\\nyse.csv")
+    df1 = pd.read_csv("/home/lselig/selig-fa/finance/.data/nasdaq_tickers.csv")
+    df2 = pd.read_csv("/home/lselig/selig-fa/finance/.data/nyse.csv")
     tickers = list(df1.Symbol.values) + list(df2["ACT Symbol"].values)
     keep = []
     for t in tickers:
-        print(t)
+        # print(t)
         if(not t != t and ("^" in t or '$' in t)):
             pass
         else:
@@ -123,7 +126,7 @@ def request_and_download_financials(url, save_path):
     n_fails = 0
     while code == 429 and n_fails <= 1000:
         try:
-            response = urlopen(url, cafile=certifi.where())
+            response = urlopen(url)
             # response = urlopen(url)
             code = response.code
         except:
@@ -212,7 +215,7 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     # relevant_tickers = [x for x in tickers if x.count(".") == 0]
     relevant_tickers = nyse_nasdaq_tickers()
     request_save_map = {}
-    base_path_out = f"{DATA_DIR}\\{folder_name}"
+    base_path_out = f"{DATA_DIR}/{folder_name}"
     if not os.path.isdir(base_path_out):
         os.makedirs(base_path_out)
     for t in relevant_tickers:
@@ -284,8 +287,8 @@ if __name__ == "__main__":
         pull_balance_sheets=False,
         period="quarter",
         pull_stock_data=False,
-        pull_ratios = False,
-        pull_enterprise_values= True
+        pull_ratios = True,
+        pull_enterprise_values= False
     )
 
     #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)

@@ -20,6 +20,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import glob, os, random
 from pathlib import Path
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 np.random.seed(0)
+print(sys.path)
 sns.set_style("darkgrid")

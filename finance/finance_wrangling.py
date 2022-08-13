@@ -4,8 +4,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import glob, os, random
 from pathlib import Path
-from finance.constants import DATA_DIR, PLOTS_DIR
 from alive_progress import alive_bar
+ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # this is the project root
+MAX_WORKERS = os.cpu_count()
+DATA_DIR = f"{ROOT_DIR}/.data"
+PLOTS_DIR = f"{ROOT_DIR}/.plots"
 
 np.random.seed(0)
 sns.set_style("darkgrid")
@@ -30,9 +33,9 @@ def folders_to_dfs(loop_over):
                     continue
                 else:
                     df = pd.read_parquet(x)
-                    # for col in list(df):
-                    #     if(col != "symbol" and col != "date"):
-                    #         df[col] = df[col].astype("float64")
+                    for col in list(df):
+                        if(col != "symbol" and col != "date" and col != "period"):
+                            df[col] = df[col].astype("float64")
 
                     try:
                         df["othertotalStockholdersEquity"] = df.othertotalStockholdersEquity.astype("float64")
@@ -53,7 +56,7 @@ def combine_evs_finratios():
     print(ratios.head())
 
     evs_ratios = pd.merge(evs, ratios, on = ["symbol", "date"])
-    evs_ratios.to_parquet(f"{DATA_DIR}\\evs_ratios.parquet")
+    evs_ratios.to_parquet(f"{DATA_DIR}/evs_ratios.parquet")
     return
 
 def dfs_to_master_df(do_plots, do_summary):
@@ -179,9 +182,9 @@ def dfs_to_master_df(do_plots, do_summary):
 def run():
     # loop_over = ["income_statements", "balance_sheets", "cash_flows"]
     # loop_over = ["hist_prices"]
-    # loop_over = ["ratios"]
+    loop_over = ["ratios"]
     # loop_over = ["evs"]
-    # folders_to_dfs(loop_over)
+    folders_to_dfs(loop_over)
     combine_evs_finratios()
     # print("Converting dfs to one big df")
     # dfs_to_master_df(do_plots=True, do_summary=True)
