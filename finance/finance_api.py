@@ -243,7 +243,10 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     print(f"Pulling {folder_name} took : {np.round( toc - tic, 2 )}s")
 
 
-def run(pull_income_statements, pull_balance_sheets, pull_cash_flow, period, pull_stock_data, pull_ratios):
+def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
+        period, pull_stock_data, pull_ratios,
+        pull_enterprise_values):
+
     if pull_income_statements:
         folder_name = "income_statements"
         base_api_url = "https://financialmodelingprep.com/api/v3/income-statement"
@@ -266,6 +269,10 @@ def run(pull_income_statements, pull_balance_sheets, pull_cash_flow, period, pul
         base_api_url = "https://financialmodelingprep.com/api/v3/ratios"
         get_financial_statement_data(folder_name, base_api_url, period = period)
 
+    if pull_enterprise_values:
+        folder_name = "evs"
+        base_api_url = "https://financialmodelingprep.com/api/v3/enterprise-values"
+        get_financial_statement_data(folder_name, base_api_url, period = period)
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -277,7 +284,8 @@ if __name__ == "__main__":
         pull_balance_sheets=False,
         period="quarter",
         pull_stock_data=False,
-        pull_ratios = True
+        pull_ratios = False,
+        pull_enterprise_values= True
     )
 
     #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
