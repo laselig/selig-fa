@@ -1,3 +1,0 @@
-#Activating a venv in powershell #
-.venv/Scripts/activate.ps1
-pat: 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

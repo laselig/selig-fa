@@ -34,9 +34,8 @@ def folders_to_dfs(loop_over):
                 else:
                     df = pd.read_parquet(x)
                     for col in list(df):
-                        if(col != "symbol" and col != "date" and col != "period"):
+                        if(col != "symbol" and col != "date" and col != "period" and col != "year"):
                             df[col] = df[col].astype("float64")
-
                     try:
                         df["othertotalStockholdersEquity"] = df.othertotalStockholdersEquity.astype("float64")
                     except:
@@ -52,11 +51,26 @@ def neglog(x):
 def combine_evs_finratios():
     evs = pd.read_parquet(f"{DATA_DIR}/evs.parquet")
     ratios = pd.read_parquet(f"{DATA_DIR}/ratios.parquet")
+    insider_trades = pd.read_parquet(f"{DATA_DIR}/insider_trades.parquet")
+
     print(evs.head())
     print(ratios.head())
 
     evs_ratios = pd.merge(evs, ratios, on = ["symbol", "date"])
+    evs_ratios["year"] = pd.DatetimeIndex(evs_ratios["date"]).year
+    my_dict = {"Q1" : 1.0,
+               "Q2": 2.0,
+               "Q3": 3.0,
+               "Q4": 4.0}
+    evs_ratios = evs_ratios.replace({"period": my_dict})
+    evs_ratios = evs_ratios[evs_ratios.period != ""]
+    evs_ratios["period"] = evs_ratios.period.astype("float64")
+    evs_ratios = evs_ratios.rename(columns = {"period": "quarter"})
+
+
+    evs_ratios = pd.merge(evs_ratios, insider_trades, on = ["symbol", "year", "quarter"])
     evs_ratios.to_parquet(f"{DATA_DIR}/evs_ratios.parquet")
+
     return
 
 def dfs_to_master_df(do_plots, do_summary):
@@ -182,9 +196,10 @@ def dfs_to_master_df(do_plots, do_summary):
 def run():
     # loop_over = ["income_statements", "balance_sheets", "cash_flows"]
     # loop_over = ["hist_prices"]
-    loop_over = ["ratios"]
+    # loop_over = ["ratios"]
     # loop_over = ["evs"]
-    folders_to_dfs(loop_over)
+    # loop_over = ["insider_trades"]
+    # folders_to_dfs(loop_over)
     combine_evs_finratios()
     # print("Converting dfs to one big df")
     # dfs_to_master_df(do_plots=True, do_summary=True)

@@ -15,12 +15,11 @@ ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # this is the proje
 MAX_WORKERS = os.cpu_count()
 DATA_DIR = f"{ROOT_DIR}/.data"
 PLOTS_DIR = f"{ROOT_DIR}/.plots"
-
 sns.set_style("darkgrid")
 
 def nyse_nasdaq_tickers():
-    df1 = pd.read_csv("/home/lselig/selig-fa/finance/.data/nasdaq_tickers.csv")
-    df2 = pd.read_csv("/home/lselig/selig-fa/finance/.data/nyse.csv")
+    df1 = pd.read_csv("/Users/lselig/selig-fa/finance/.data/nasdaq_tickers.csv")
+    df2 = pd.read_csv("/Users/lselig/selig-fa/finance/.data/nyse.csv")
     tickers = list(df1.Symbol.values) + list(df2["ACT Symbol"].values)
     keep = []
     for t in tickers:
@@ -47,7 +46,7 @@ def json_to_file(my_dict, out_file):
 def request_and_download_stocks(ticker, save_path):
 
     # this thread works on a single ticker
-    df = pd.read_parquet("/users/lselig/finance/finance/.data/fundamental_analysis_neglog.parquet")
+    df = pd.read_parquet("/Users/lselig/finance/finance/.data/fundamental_analysis_neglog.parquet")
     df_for_ticker = df[df.symbol == ticker]
     del df
     gc.collect()
@@ -138,6 +137,7 @@ def request_and_download_financials(url, save_path):
         if "date" in list(tmp_df):
             tmp_df["date"] = [parser.parse(x) for x in tmp_df.date]
             tmp_df = tmp_df.sort_values(by=["date"])
+        elif("date" not in list(tmp_df)):
             tmp_df.to_parquet(save_path, index=False)
         else:
             return
@@ -221,7 +221,10 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     for t in relevant_tickers:
         f_name = f"{t}.parquet"
         out_path = Path(base_path_out) / f_name
-        url = f"{base_api_url}/{t}?period={period}&apikey={API_KEY}"
+        if(period is not None):
+            url = f"{base_api_url}/{t}?period={period}&apikey={API_KEY}"
+        else:
+            url = f"{base_api_url}?symbol={t}&apikey={API_KEY}"
         request_save_map[url] = out_path
 
     tic = timeit.default_timer()
@@ -248,7 +251,7 @@ def get_financial_statement_data(folder_name, base_api_url, period):
 
 def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
         period, pull_stock_data, pull_ratios,
-        pull_enterprise_values):
+        pull_enterprise_values, pull_insider_trading):
 
     if pull_income_statements:
         folder_name = "income_statements"
@@ -264,7 +267,7 @@ def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
         get_financial_statement_data(folder_name, base_api_url, period=period)
     if pull_stock_data:
         folder_name = "hist_prices"
-        all_financials_df = pd.read_parquet("/users/lselig/finance/finance/.data/fundamental_analysis_neglog.parquet")
+        all_financials_df = pd.read_parquet("/Users/lselig/finance/finance/.data/fundamental_analysis_neglog.parquet")
         get_stock_data(folder_name, all_financials_df)
 
     if pull_ratios:
@@ -277,6 +280,12 @@ def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
         base_api_url = "https://financialmodelingprep.com/api/v3/enterprise-values"
         get_financial_statement_data(folder_name, base_api_url, period = period)
 
+    if pull_insider_trading:
+        folder_name = "insider_trades"
+        base_api_url = "https://financialmodelingprep.com/api/v4/insider-roaster-statistic"
+        get_financial_statement_data(folder_name, base_api_url, period = None)
+
+
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
     API_KEY = os.environ.get("API_KEY")
@@ -285,11 +294,9 @@ if __name__ == "__main__":
         pull_income_statements=False,
         pull_cash_flow=False,
         pull_balance_sheets=False,
-        period="quarter",
+        period=None,
         pull_stock_data=False,
-        pull_ratios = True,
-        pull_enterprise_values= False
+        pull_ratios = False,
+        pull_enterprise_values= False,
+        pull_insider_trading = True
     )
-
-    #     print(rd, daily_prices.date, daily_prices.open, daily_prices.high, daily_prices.close)
-    # print("\n\n")
