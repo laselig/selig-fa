@@ -17,6 +17,7 @@ sns.set_style("darkgrid")
 def folders_to_dfs(loop_over):
     # create a df from each of the 3 folder types
     # loop_over = ["income_statements", "balance_sheets", "cash_flows"]
+    non_floats = ["symbol", "date", "period", "year"]
     for type_ in loop_over:
         indv_files = glob.glob(f"{DATA_DIR}/{type_}/*")
         tmp = []
@@ -33,8 +34,10 @@ def folders_to_dfs(loop_over):
                     continue
                 else:
                     df = pd.read_parquet(x)
+                    if(df.shape[0] != 0):
+                        df = df.drop(columns = ["dcf", "dcfDiff"], axis = 1)
                     for col in list(df):
-                        if(col != "symbol" and col != "date" and col != "period" and col != "year"):
+                        if(type_ != "profile" and col in non_floats):
                             df[col] = df[col].astype("float64")
                     try:
                         df["othertotalStockholdersEquity"] = df.othertotalStockholdersEquity.astype("float64")
@@ -52,6 +55,10 @@ def combine_evs_finratios():
     evs = pd.read_parquet(f"{DATA_DIR}/evs.parquet")
     ratios = pd.read_parquet(f"{DATA_DIR}/ratios.parquet")
     insider_trades = pd.read_parquet(f"{DATA_DIR}/insider_trades.parquet")
+    profiles = pd.read_parquet(f"{DATA_DIR}/profile.parquet")
+    keep_me = ["exchangeShortName", "industry", "sector", "country",
+               "fullTimeEmployees", "isEtf", "isActivelyTrading", "isFund", "symbol"]
+    profiles = profiles[keep_me]
 
     print(evs.head())
     print(ratios.head())
@@ -69,7 +76,8 @@ def combine_evs_finratios():
 
 
     evs_ratios = pd.merge(evs_ratios, insider_trades, on = ["symbol", "year", "quarter"])
-    evs_ratios.to_parquet(f"{DATA_DIR}/evs_ratios.parquet")
+    final = pd.merge(evs_ratios, profiles, on = ["symbol"])
+    final.to_parquet(f"{DATA_DIR}/evs_ratios.parquet")
 
     return
 
@@ -200,6 +208,7 @@ def run():
     # loop_over = ["evs"]
     # loop_over = ["insider_trades"]
     # folders_to_dfs(loop_over)
+    # folders_to_dfs(["profile"])
     combine_evs_finratios()
     # print("Converting dfs to one big df")
     # dfs_to_master_df(do_plots=True, do_summary=True)

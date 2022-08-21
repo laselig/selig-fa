@@ -221,7 +221,9 @@ def get_financial_statement_data(folder_name, base_api_url, period):
     for t in relevant_tickers:
         f_name = f"{t}.parquet"
         out_path = Path(base_path_out) / f_name
-        if(period is not None):
+        if(folder_name == "profile"):
+            url = f"{base_api_url}{t}?apikey={API_KEY}"
+        elif(period is not None):
             url = f"{base_api_url}/{t}?period={period}&apikey={API_KEY}"
         else:
             url = f"{base_api_url}?symbol={t}&apikey={API_KEY}"
@@ -251,7 +253,7 @@ def get_financial_statement_data(folder_name, base_api_url, period):
 
 def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
         period, pull_stock_data, pull_ratios,
-        pull_enterprise_values, pull_insider_trading):
+        pull_enterprise_values, pull_insider_trading, pull_profile):
 
     if pull_income_statements:
         folder_name = "income_statements"
@@ -285,6 +287,11 @@ def run(pull_income_statements, pull_balance_sheets, pull_cash_flow,
         base_api_url = "https://financialmodelingprep.com/api/v4/insider-roaster-statistic"
         get_financial_statement_data(folder_name, base_api_url, period = None)
 
+    if pull_profile:
+        folder_name = "profile"
+        base_api_url = "https://financialmodelingprep.com/api/v3/profile/"
+        get_financial_statement_data(folder_name, base_api_url, period = None)
+
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -298,5 +305,6 @@ if __name__ == "__main__":
         pull_stock_data=False,
         pull_ratios = False,
         pull_enterprise_values= False,
-        pull_insider_trading = True
+        pull_insider_trading = False,
+        pull_profile = True
     )
