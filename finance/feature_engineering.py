@@ -12,6 +12,8 @@ from sklearn.model_selection import GridSearchCV
 from feature_engine.outliers import Winsorizer
 from feature_engine.discretisation import DecisionTreeDiscretiser, EqualFrequencyDiscretiser
 from feature_engine.encoding import OneHotEncoder
+from dateutil import parser
+import datetime
 
 np.random.seed(0)
 sns.set_style("darkgrid")
@@ -20,7 +22,9 @@ df = pd.read_parquet("/Users/lselig/selig-fa/finance/.data/evs_ratios.parquet")
 # df["year"] = pd.DatetimeIndex(df["date"]).year
 # df = df[df.symbol.isin(["AAPL", "GOOGL", "MSFT", "GME", "A", "QQQ", "AMZN", "TSLA"])]
 # df = df[df.year >= 2015]
-df = df[(df.stockPrice >= 6) & (df.stockPrice <= 1000)]
+yrs_maturity = 3
+
+df = df[(df.stockPrice >= 4) & (df.stockPrice <= 1000)]
 remove_me = []
 for col in list(df):
     num_na = df[col].isna().sum().sum()
@@ -31,8 +35,13 @@ remove_me.append("fullTimeEmployees")
 df = df.drop(columns = remove_me)
 df = df.dropna()
 df = df[df.sector != ""]
+df = df[df.ipoDate != ""]
+df["daysSinceIPO"] = [(parser.parse(x) - datetime.datetime.now()).days * -1 for x in df.ipoDate]
+df = df[df.daysSinceIPO >= yrs_maturity * 365]
 df = df[(df.isFund == False) & (df.isEtf == False) & (df.country == "US") &
         ((df.exchangeShortName == "NASDAQ") | (df.exchangeShortName == "NYSE"))]
+
+
 
 
 threshold = 21
@@ -41,13 +50,9 @@ print(value_counts.to_string())
 to_remove = value_counts[value_counts <= threshold].index
 df["industry"] = df["industry"].replace(to_remove, np.nan)
 df = df.dropna()
-df = df[df.industry != "Biotechnology"]
+# df = df[df.industry != "Biotechnology"]
 meta_cols = ["stockPrice", "symbol", "quarter", "cik",
-             "isEtf", "isActivelyTrading", "isFund", "country"]
-# meta = df[meta_cols]
-# meta.to_parquet("/Users/lselig/selig-fa/finance/.data/meta_data.parquet", index = False)
-
-# df = df.drop(columns = meta_cols)
+             "isEtf", "isActivelyTrading", "isFund", "country", "ipoDate"]
 features = df
 
 

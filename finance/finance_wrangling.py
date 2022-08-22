@@ -57,7 +57,7 @@ def combine_evs_finratios():
     insider_trades = pd.read_parquet(f"{DATA_DIR}/insider_trades.parquet")
     profiles = pd.read_parquet(f"{DATA_DIR}/profile.parquet")
     keep_me = ["exchangeShortName", "industry", "sector", "country",
-               "fullTimeEmployees", "isEtf", "isActivelyTrading", "isFund", "symbol"]
+               "fullTimeEmployees", "isEtf", "isActivelyTrading", "isFund", "symbol", "ipoDate"]
     profiles = profiles[keep_me]
 
     print(evs.head())
