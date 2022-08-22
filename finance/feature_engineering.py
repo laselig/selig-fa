@@ -20,7 +20,7 @@ df = pd.read_parquet("/Users/lselig/selig-fa/finance/.data/evs_ratios.parquet")
 # df["year"] = pd.DatetimeIndex(df["date"]).year
 # df = df[df.symbol.isin(["AAPL", "GOOGL", "MSFT", "GME", "A", "QQQ", "AMZN", "TSLA"])]
 # df = df[df.year >= 2015]
-df = df[(df.stockPrice >= 2) & (df.stockPrice <= 1000)]
+df = df[(df.stockPrice >= 6) & (df.stockPrice <= 1000)]
 remove_me = []
 for col in list(df):
     num_na = df[col].isna().sum().sum()
@@ -42,12 +42,12 @@ to_remove = value_counts[value_counts <= threshold].index
 df["industry"] = df["industry"].replace(to_remove, np.nan)
 df = df.dropna()
 df = df[df.industry != "Biotechnology"]
-meta_cols = ["stockPrice", "year", "symbol", "date", "quarter", "cik",
+meta_cols = ["stockPrice", "symbol", "quarter", "cik",
              "isEtf", "isActivelyTrading", "isFund", "country"]
-meta = df[meta_cols]
-meta.to_parquet("/Users/lselig/selig-fa/finance/.data/meta_data.parquet", index = False)
+# meta = df[meta_cols]
+# meta.to_parquet("/Users/lselig/selig-fa/finance/.data/meta_data.parquet", index = False)
 
-df = df.drop(columns = meta_cols)
+# df = df.drop(columns = meta_cols)
 features = df
 
 
@@ -77,7 +77,8 @@ def get_outlier_idxs(feature, feature_name):
     return outliers
 
 discretisize_me = ["addTotalDebt", "payoutRatio", "buySellRatio", "totalBought", "totalSold"]
-skip_transform_me = ["stockPrice", "exchangeShortName", "industry", "sector"]
+skip_transform_me = ["stockPrice", "exchangeShortName", "industry", "sector", "date", "year"]
+skip_transform_me += meta_cols
 for f in features:
     if(f in skip_transform_me):
         continue
@@ -130,17 +131,12 @@ for f in features:
     if(f in skip_transform_me):
         continue
     print(f)
-    plt.hist2d(features[f], np.log10(meta["stockPrice"]), bins = 300)
-    corrlog = np.corrcoef(features[f].values, np.log10(meta["stockPrice"].values))[0, 1]
-    corr = np.corrcoef(features[f].values, meta["stockPrice"].values)[0, 1]
+    plt.hist2d(features[f], np.log10(features["stockPrice"]), bins = 300)
+    corrlog = np.corrcoef(features[f].values, np.log10(features["stockPrice"].values))[0, 1]
+    corr = np.corrcoef(features[f].values, features["stockPrice"].values)[0, 1]
     plt.title(f"{f}\n{corr = }\n{corrlog = }")
     plt.savefig(f"/Users/lselig/selig-fa/finance/.plots/corr/{f}.png", dpi = 200)
-    plt.show()
-    # plt.hist(features[f], bins = 80)
-    # plt.title(f"Final feature: {f}\n{np.min(features[f]): .2f}")
-    # plt.savefig(f"/Users/lselig/selig-fa/finance/.plots/{f}", dpi = 400)
-    # plt.close()
-    # plt.show()
+    plt.close()
 
 
 
