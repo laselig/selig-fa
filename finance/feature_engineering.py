@@ -50,7 +50,7 @@ print(value_counts.to_string())
 to_remove = value_counts[value_counts <= threshold].index
 df["industry"] = df["industry"].replace(to_remove, np.nan)
 df = df.dropna()
-# df = df[df.industry != "Biotechnology"]
+df = df[df.industry != "Biotechnology"]
 meta_cols = ["stockPrice", "symbol", "quarter", "cik",
              "isEtf", "isActivelyTrading", "isFund", "country", "ipoDate"]
 features = df
